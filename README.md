@@ -1,7 +1,7 @@
 # cMips
 #### by pidbaq (Cris Ghiurea)
 
-CMips is a proof of concept of a 16 bit subset of MIPS designed by [pidbaq](www.pidbaq.com).  cMips contains most features of a full working CPU using RISC design with a 32 by 32 bit monitor. 
+CMips is a proof of concept of a 16 bit subset of MIPS designed by [pidbaq](http://www.pidbaq.com).  cMips contains most features of a full working CPU using RISC design with a 32 by 32 bit monitor. 
 
 Included in the repo you will find an assembler for easy programming.  It also contains demo code to get you started or you can use the web interface to assemble your own application.
 
