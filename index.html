@@ -91,8 +91,8 @@ jump loop";
             the.hex = CodeMirror.fromTextArea(textAreaHex, opts2);
             the.assembler.editor = the.editor;
 
-            the.editor.setSize('50%',550);
-            $( the.editor.display.wrapper).css("float","left")
+            // the.editor.setSize('50%',550);
+            // $( the.editor.display.wrapper).css("float","left")
             the.editor.focus();
 
             the.editor.setValue(default_text);
@@ -106,13 +106,20 @@ jump loop";
 </head>
 <h2>Assembly</h2>
 <textarea id="code" style=""></textarea>
-<canvas id="simulator" style="float:left; width:45%;height:550px;border: 1px solid gray;margin-left:20px;"></canvas>
-<br style="clear:both">
 <button id="compile">Compile</button>
+
+
+<h2>Simulator</h2>
+<canvas id="simulator" width="800px" height="350px" style="border: 1px solid gray;"></canvas>
+<br style="clear:both">
+
+
 <button id="simulate">Simulate</button>
+
 <h2>Bin</h2>
 <textarea id="machineCode" style=""></textarea>
 <br style="clear:both">
+
 <h2>Hex</h2>
 <textarea id="hexCode" style=""></textarea>
 
