@@ -36,6 +36,26 @@
             });
 
 
+            $('#simulate').click(function(e){
+
+                //test the canvas
+                var context = the.simulator.context;
+                context.clearRect(0, 0, 400, 550);
+                context.font = '15pt Calibri';
+                context.fillStyle = 'black';
+                context.fillText("Simulator!", 25, 25);
+
+                context.beginPath();
+                context.strokeStyle = 'green';
+                context.moveTo(30, 30);
+                context.lineTo(110, 30);
+                context.stroke();
+
+
+ 
+
+            });
+
 
       
             var default_text = "addi $1 $0 1\n\
@@ -49,6 +69,7 @@ jump loop";
             var textArea = $('#code')[0];
             var textAreaBin = $('#machineCode')[0];
             var textAreaHex = $('#hexCode')[0];
+            var simulator = $('#simulator')[0];
 
             opts = {};
             opts.indent_size = 4;
@@ -61,6 +82,8 @@ jump loop";
 
             opts2 = JSON.parse(JSON.stringify(opts));;
             opts2.mode = "";
+            the.simulator = {};
+            the.simulator.view = simulator;
 
             the.assembler = new cMips();
             the.editor = CodeMirror.fromTextArea(textArea, opts);
@@ -68,13 +91,13 @@ jump loop";
             the.hex = CodeMirror.fromTextArea(textAreaHex, opts2);
             the.assembler.editor = the.editor;
 
- 
+            the.editor.setSize('50%',550);
+            $( the.editor.display.wrapper).css("float","left")
             the.editor.focus();
 
             the.editor.setValue(default_text);
-
-
-
+         
+            the.simulator.context = simulator.getContext('2d');
 
         });
     
@@ -83,8 +106,10 @@ jump loop";
 </head>
 <h2>Assembly</h2>
 <textarea id="code" style=""></textarea>
+<canvas id="simulator" style="float:left; width:45%;height:550px;border: 1px solid gray;margin-left:20px;"></canvas>
 <br style="clear:both">
 <button id="compile">Compile</button>
+<button id="simulate">Simulate</button>
 <h2>Bin</h2>
 <textarea id="machineCode" style=""></textarea>
 <br style="clear:both">
