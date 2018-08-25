@@ -36,17 +36,6 @@
             });
 
 
-            $('#simulate').click(function(e){
-  
-                var compiledCode = the.assembler.parse(the.editor);
-                the.binary.setValue(compiledCode.bin);
-
-                the.hex.setValue(compiledCode.hex);
-
-
-
-            });
-
 
       
             var default_text = "addi $1 $0 1\n\
@@ -79,7 +68,7 @@ jump loop";
             the.hex = CodeMirror.fromTextArea(textAreaHex, opts2);
             the.assembler.editor = the.editor;
 
-            the.editor.setSize('55%',450);
+ 
             the.editor.focus();
 
             the.editor.setValue(default_text);
@@ -92,12 +81,10 @@ jump loop";
 
 </script>
 </head>
-
+<h2>Assembly</h2>
 <textarea id="code" style=""></textarea>
-<canvas id="render" style=""></canvas>
 <br style="clear:both">
 <button id="compile">Compile</button>
-<button id="simulate">Simulate</button>
 <h2>Bin</h2>
 <textarea id="machineCode" style=""></textarea>
 <br style="clear:both">
