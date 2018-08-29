@@ -33,4 +33,4 @@ cMips.circ is the main logism file containing the CPU.
 
 ### Screenshot
 
-![cMips Screenshot](cMips.png)
+![cMips Screenshot](docs/images/labeled_schematic.png)
