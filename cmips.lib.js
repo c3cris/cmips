@@ -93,6 +93,7 @@ function cMips (type) {
     this.variables = /^(\$[0-8]|\$ra|\$sp)\b/i;
     this.numbers = /^(0x[\da-f]+|0[0-7]|0b[01]+|-?\d+)\b/i;
     this.labels = {};
+    this.textlabels = {};
     this.context = 0;
     this.machineCode = [];
     this.line = 0;
@@ -106,6 +107,7 @@ function cMips (type) {
       this.line = 0;
       this.textLine = 0;
       this.labels = {};
+      this.textlabels = {};
       this.error = false;
 
 
@@ -115,10 +117,11 @@ function cMips (type) {
       try {
         
         for (var i = 0; i < length; i++) {
-
+          this.textLine++;
           this.parseLabels(this.code[i]);
         }
 
+        this.textLine = 0;
         this.line = 0;
         for (var i = 0; i < length; i++) {
 
@@ -164,6 +167,7 @@ function cMips (type) {
         match = match.replace(/:/, "");
         match = match.toUpperCase();
         this.labels[match] = this.line;
+        this.textlabels[match] = this.textLine;
         return true;
       }
 
@@ -182,8 +186,9 @@ function cMips (type) {
 
     }
 
-    this.parseLine = function(line){
-    
+    this.parseLine = function(line, simulator){
+
+
       this.context = 0;
 
       line = line.replace(/^\s+/, "");
@@ -191,7 +196,7 @@ function cMips (type) {
       var machineCode = {};
       var operation = "";
 
-      //tag
+      //tag I don't erase the labels
       if(match = /^\S+\:/.exec(line)){
         //match = match[0];
         //match = match.replace(/:/, "");
@@ -305,6 +310,10 @@ function cMips (type) {
         this.machineCode.push([]);
         this.machineCode[this.line] = machineCode.opCode + machineCode.regS + machineCode.regT + machineCode.regD + machineCode.functionCode;
 
+        if ( typeof simulator !== "undefined" ){
+            simulator.code = {op: operation, sr: machineCode.regS, tr: machineCode.regT, dr: machineCode.regD};
+        }
+
       //addi $t, $s, imm
       //sti
       }else if(this.context == 2){
@@ -337,6 +346,7 @@ function cMips (type) {
           match = match[0];
           line = line.replace(this.numbers, "");
           match = parseInt(match);
+          immediate = match;
           machineCode.regI = this.intToBinary(match, 6); 
 
            if(machineCode.regI === null){
@@ -351,7 +361,9 @@ function cMips (type) {
         this.machineCode.push([]);
         this.machineCode[this.line] = machineCode.opCode + machineCode.regS + machineCode.regT + machineCode.regI;
 
-
+        if ( typeof simulator !== "undefined" ){
+          simulator.code = {op: operation, sr: machineCode.regS, tr: machineCode.regT, im: immediate};
+        }
 
       //j target
       }else if(this.context == 3){
@@ -360,6 +372,7 @@ function cMips (type) {
           match = match[0];
           match = match.toUpperCase();
           machineCode.jump = this.labels[match];
+          machineCode.textjump = this.textlabels[match];
 
           machineCode.regJ = this.intToBinary(machineCode.jump, 12); 
 
@@ -374,6 +387,9 @@ function cMips (type) {
         this.machineCode.push([]);
         this.machineCode[this.line] = machineCode.opCode + machineCode.regJ;
 
+        if ( typeof simulator !== "undefined" ){
+            simulator.code = {op:operation, im:machineCode.textjump, line:this.textLine};
+        }
       }
 
 
