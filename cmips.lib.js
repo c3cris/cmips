@@ -93,7 +93,7 @@ function cMips (type) {
     this.variables = /^(\$[0-8]|\$ra|\$sp)\b/i;
     this.numbers = /^(0x[\da-f]+|0[0-7]|0b[01]+|-?\d+)\b/i;
     this.labels = {};
-    this.textlabels = {};
+    this.lineMap = {};
     this.context = 0;
     this.machineCode = [];
     this.line = 0;
@@ -133,7 +133,7 @@ function cMips (type) {
         this.error = true;
         return {"bin":"","hex":""};
       }
-      console.log(this.machineCode);
+      // console.log(this.machineCode);
 
       var binary = this.machineCode.join("\n");
       var hex = this.binaryToHex(this.machineCode);
@@ -167,7 +167,7 @@ function cMips (type) {
         match = match.replace(/:/, "");
         match = match.toUpperCase();
         this.labels[match] = this.line;
-        this.textlabels[match] = this.textLine;
+
         return true;
       }
 
@@ -180,6 +180,8 @@ function cMips (type) {
       {
         return true;
       }
+
+      this.lineMap[this.line] = this.textLine;
 
      this.line++;
      return true;
@@ -253,7 +255,7 @@ function cMips (type) {
 
       //add $d, $s, $t
       //std
-      if(this.context == 1){
+      if(this.context === 1){
         //varD
         if(match = this.variables.exec(line)){
           match = match[0];
@@ -308,7 +310,7 @@ function cMips (type) {
           }
         }
         this.machineCode.push([]);
-        this.machineCode[this.line] = machineCode.opCode + machineCode.regS + machineCode.regT + machineCode.regD + machineCode.functionCode;
+        this.machineCode[this.line] = machineCode.opCode + machineCode.regS + machineCode.regT + machineCode.regD + machineCode.functionCode + " " + operation;
 
         if ( typeof simulator !== "undefined" ){
             simulator.code = {op: operation, sr: machineCode.regS, tr: machineCode.regT, dr: machineCode.regD};
@@ -316,7 +318,7 @@ function cMips (type) {
 
       //addi $t, $s, imm
       //sti
-      }else if(this.context == 2){
+      }else if(this.context === 2){
         //varD
         if(match = this.variables.exec(line)){
           match = match[0];
@@ -359,20 +361,19 @@ function cMips (type) {
 
           }
         this.machineCode.push([]);
-        this.machineCode[this.line] = machineCode.opCode + machineCode.regS + machineCode.regT + machineCode.regI;
+        this.machineCode[this.line] = machineCode.opCode + machineCode.regS + machineCode.regT + machineCode.regI + " " + operation + " " + immediate;;
 
         if ( typeof simulator !== "undefined" ){
           simulator.code = {op: operation, sr: machineCode.regS, tr: machineCode.regT, im: immediate};
         }
 
       //j target
-      }else if(this.context == 3){
+      }else if(this.context === 3){
 
         if(match = /^\S+/.exec(line)){
           match = match[0];
           match = match.toUpperCase();
           machineCode.jump = this.labels[match];
-          machineCode.textjump = this.textlabels[match];
 
           machineCode.regJ = this.intToBinary(machineCode.jump, 12); 
 
@@ -385,15 +386,14 @@ function cMips (type) {
           throw "label not found " + "| Line #" +this.textLine;
         }
         this.machineCode.push([]);
-        this.machineCode[this.line] = machineCode.opCode + machineCode.regJ;
+        this.machineCode[this.line] = machineCode.opCode + machineCode.regJ + " " + operation + " " + machineCode.jump;
 
         if ( typeof simulator !== "undefined" ){
-            simulator.code = {op:operation, im:machineCode.textjump, line:this.textLine};
+            simulator.code = {op:operation, im:machineCode.jump};
         }
       }
 
-
-
+     // this.machineCode[this.line] += " " + operation + " " + immediate;
      this.line++;
      return true;
     }

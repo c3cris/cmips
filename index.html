@@ -45,6 +45,17 @@
 
 
             });
+            $('#linehighlight').click(function(e){
+
+                if ( the.simulator.linehighlight === true) {
+                    the.simulator.linehighlight = false;
+                    $(this).html("LineHighlight On");
+                }else{
+                    the.simulator.linehighlight = true;
+                    $(this).html("LineHighlight Off");
+                }
+
+            });
 
             $('#pause').click(function(e){
 
@@ -94,6 +105,7 @@ jump loop";
 
             the.assembler = new cMips();
             the.editor = CodeMirror.fromTextArea(textArea, opts);
+            the.editor.setSize("100%", 500);
             the.binary = CodeMirror.fromTextArea(textAreaBin, opts2);
             the.hex = CodeMirror.fromTextArea(textAreaHex, opts2);
             the.assembler.editor = the.editor;
@@ -103,11 +115,10 @@ jump loop";
 
             the.editor.setValue(default_text);
 
-            the.simulator = new cmipsSimulator(800, 300, "simulator");
+            the.simulator = new cmipsSimulator(900, 300, "simulator");
             the.simulator.editor = the.editor;
             the.simulator.assembler = the.assembler;
-//            the.simulator.test("hi");
-//            the.simulator.drawRegs();
+
 
 
 
@@ -123,6 +134,7 @@ jump loop";
 <button id="run">Run</button>
 <button id="pause">Pause</button>
 <button id="step">Step</button>
+<button id="linehighlight">LineHighlight On</button>
 <br style="clear:both"><br style="clear:both">
 <canvas id="simulator"></canvas>
 

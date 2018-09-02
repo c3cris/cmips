@@ -16,7 +16,8 @@ function cmipsSimulator(w, h, el) {
     this.done = false;
     this.k = 0;
     this.memory = {};
-    this.steps = 400;
+    this.linehighlight = false;
+    this.steps = 100;
     this.screen = [];
     this.populateScreen();
     this.init();
@@ -48,7 +49,6 @@ cmipsSimulator.prototype.init = function () {
         var characterPressed = String.fromCharCode(event.keyCode);
 
         if (characterPressed.toUpperCase() === "X") {
-            console.log("X");
             t.steps *= 2;
         } else if (characterPressed.toUpperCase() === "Z") {
             t.steps /= 2;
@@ -60,8 +60,9 @@ cmipsSimulator.prototype.init = function () {
 
 cmipsSimulator.prototype.run = function () {
 
-
+    this.reset();
     clearTimeout(this.interval);
+
     //reset vars
     this.state = 1;
     this.assembler.machineCode = [];
@@ -83,6 +84,8 @@ cmipsSimulator.prototype.run = function () {
             this.assembler.textLine++;
             this.assembler.parseLabels(this.assembler.code[i]);
         }
+
+        // console.log(this.assembler.lineMap);
         this.assembler.line = 0;
         this.assembler.textLine = 0;
 
@@ -109,17 +112,18 @@ cmipsSimulator.prototype.parse = function () {
     // for (var i = 0; i < length; i++) {
 
         this.assembler.textLine++;
-        if ( this.mark !== null) this.mark.clear();
-        this.mark = this.editor.markText({line: this.assembler.textLine -1 , ch: 0}, {line: this.assembler.textLine - 1, ch: 200}, {className: "styled-background"});
-        this.assembler.parseLine(this.assembler.code[this.line], this);
-        this.line++;
+        if ( this.mark !== null && this.linehighlight) this.mark.clear();
+        if ( this.linehighlight) this.mark = this.editor.markText({line: this.assembler.textLine -1 , ch: 0}, {line: this.assembler.textLine - 1, ch: 200}, {className: "styled-background"});
+        this.assembler.parseLine(this.assembler.code[this.assembler.textLine - 1], this);
+        // console.log(this.assembler.code[this.assembler.textLine - 1])
 
         if( this.code.op != null){
             this.simulate(this.code);
+            this.line++;
         }
 
 
-        console.log(this.assembler.code[this.line])
+
 
 
 };
@@ -171,6 +175,7 @@ cmipsSimulator.prototype.draw = function () {
 
     this.drawRegs();
     this.drawScreen();
+    this.drawMemory();
     this.fps();
 
 
@@ -189,16 +194,19 @@ cmipsSimulator.prototype.populateScreen = function () {
 cmipsSimulator.prototype.reset = function () {
 
     this.registers = [0, 0, 0, 0, 0, 0, 0, 0];
+    this.memory = {};
     this.populateScreen();
     this.line = 0;
 
 }
 cmipsSimulator.prototype.fps = function () {
 
-    writeMessage(this.context, this.steps, 300, 20, 60, 35, "14");
+    writeMessage(this.context, Math.floor(this.steps * 100) / 100, 10, 10, 40, 25, "10");
 
 
 }
+
+
 
 cmipsSimulator.prototype.drawRegs = function () {
 
@@ -233,15 +241,61 @@ cmipsSimulator.prototype.drawRegs = function () {
 
 }
 
+cmipsSimulator.prototype.drawMemory = function () {
+
+    var ctx = this.context;
+    start = 250;
+    // width = 70;
+    height = 20;
+    offset = 15;
+    ctx.font = '13pt Calibri';
+
+    const keys = Object.keys(this.memory);
+    ctx.clearRect(start,10,250,offset*keys.length+80);
+
+    ctx.fillText("Memory",start,height);
+
+
+
+
+    var i = 0;
+    for(key in this.memory){
+
+        console.log(this.memory[key]);
+        yy = offset * i + height + 30;
+        xx = start;
+
+        ctx.fillText(key,xx, yy);
+        ctx.fillText(" | ",xx+20, yy);
+        ctx.fillText(this.memory[key],xx+35, yy);
+
+        //
+        // ctx.beginPath();
+        // ctx.moveTo(xx,yy);
+        // ctx.lineTo(xx+width,yy);
+        // ctx.lineTo(xx+width,yy+height);
+        // ctx.lineTo(xx,yy+height);
+        // ctx.lineTo(xx,yy);
+        // ctx.fillStyle = 'black';
+        // ctx.stroke();
+        // ctx.fillText("Reg "+x, xx-45, yy+20);
+        // ctx.fillStyle = 'red';
+        //
+        // ctx.fillText(this.registers[x],xx+10, yy+20);
+        i++;
+    }
+
+}
+
 cmipsSimulator.prototype.drawScreen = function () {
 
 
     var ctx = this.context;
     start_x = 500;
-    start_y = 40;
+    start_y = 20;
     width = 32;
     height = 32;
-    offset = 7;
+    offset = 8;
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
@@ -268,31 +322,87 @@ cmipsSimulator.prototype.simulate = function (code) {
             break;
         case "ADDIU":
             this.registers[this.regs[code.tr]] = this.registers[this.regs[code.sr]] + code.im;
+            break;01
+        // case "ADDI":
+        //     this.registers[this.regs[code.tr]] = this.registers[this.regs[code.sr]] + code.im;
+        //     break;
+
+        case "AND":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.tr]] & this.regs[code.sr];
             break;
-         case "ADD":
-            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.sr]] + this.registers[this.regs[code.tr]];
+        case "OR":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.tr]] | this.regs[code.sr];
+            break;
+        case "NOR":
+            break;
+        case "XOR":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.tr]] ^ this.regs[code.sr];
+            break;
+
+        case "SLL":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.tr]] << this.regs[code.sr];
+            break;
+        case "SRL":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.tr]] >> this.regs[code.sr];
+            break;
+        case "SRA":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.tr]] >>> this.regs[code.sr];
             break;
         case "SLT":
             this.registers[this.regs[code.dr]] = this.registers[this.regs[code.sr]] < this.registers[this.regs[code.tr]] ? 1 : 0;
             break;
+        case "SLTI":
+            this.registers[this.regs[code.tr]] = this.registers[this.regs[code.sr]] < code.im ? 1 : 0;
+            break;
+        case "SLTU":
+            this.registers[this.regs[code.tr]] = this.registers[this.regs[code.sr]] < code.im ? 1 : 0;
+            break;
+
+        case "SUB":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.sr]] - this.registers[this.regs[code.tr]];
+            break;
+        case "SUBU":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.sr]] - this.registers[this.regs[code.tr]];
+            break;
+         case "ADD":
+            this.registers[this.regs[code.dr]] = this.registers[this.regs[code.sr]] + this.registers[this.regs[code.tr]];
+            break;
+
         case "BEQ":
             if ( this.registers[this.regs[code.tr]] ===  this.registers[this.regs[code.sr]]){
-                this.line = this.assembler.textLine - code.im;
-                this.assembler.textLine = this.assembler.textLine - code.im;
+
+                this.line = this.line - code.im - 1;
+                this.assembler.textLine =  this.assembler.lineMap[this.line + 1] - 1;
             }
             break;
+        case "BNE":
+            if ( this.registers[this.regs[code.tr]] !==  this.registers[this.regs[code.sr]]){
+                this.line = this.line - code.im;
+                this.assembler.textLine =  this.assembler.lineMap[this.line] - 1;
+            }
+            break;
+        case "SUBIU":
+            this.registers[this.regs[code.tr]] = this.registers[this.regs[code.sr]] - code.im;
+            break;
+        case "SHW":
+            this.memory[this.registers[this.regs[code.sr]] + code.im] = this.registers[this.regs[code.tr]];
+            break;
+        case "LHW":
+            this.registers[this.regs[code.tr]] =  this.memory[this.registers[this.regs[code.sr]] + code.im];
+            break;
         case "JUMP":
-            this.line = code.im - 1;
-            this.assembler.textLine = code.im - 1;
+            this.line = code.im;
+            this.assembler.textLine = this.assembler.lineMap[code.im] - 1;
             break;
         case "JAL":
-            this.line = code.im - 1;
-            this.assembler.textLine = code.im - 1;
-            this.registers[7] = code.line;
+            this.registers[7] = this.line + 1;
+            this.line = code.im;
+            this.assembler.textLine = this.assembler.lineMap[code.im] - 1;
+
             break;
         case "JR":
-            this.line = this.registers[7] ;
-            this.assembler.textLine = this.registers[7] ;
+            this.line = this.registers[7] - 1;
+            this.assembler.textLine = this.assembler.lineMap[this.line] - 1 ;
             break;
         case "SYS":
             var x = this.registers[this.regs[code.tr]];
