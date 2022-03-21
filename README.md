@@ -8,6 +8,10 @@ CMips is a proof of concept of a 16 bit subset of MIPS designed by [pidbaq](http
 
 Included in the repo you will find an assembler for easy programming.  It also contains demo code to get you started or you can use the web interface to assemble your own application.
 
+### Screenshot
+
+![cMips Screenshot](docs/images/labeled_schematic.png)
+
 ## Installation
 
 ### Simulator
@@ -34,6 +38,4 @@ cMips.circ is the main logism file containing the CPU.
   * Install using **npm install codemirror**
 
 
-### Screenshot
 
-![cMips Screenshot](docs/images/labeled_schematic.png)
