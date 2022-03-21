@@ -16,8 +16,8 @@ function cmipsSimulator(w, h, el) {
     this.done = false;
     this.k = 0;
     this.memory = {};
-    this.linehighlight = false;
-    this.steps = 100;
+    this.linehighlight = true;
+    this.steps = 200;
     this.screen = [];
     this.populateScreen();
     this.init();
